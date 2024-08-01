@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" type="image/x-icon" href="../img/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>邮箱文件分块器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            position: relative;
+            background-image: url('.././img/backgroundsy.png'); /* 替换为你的图片路径 */
+            background-repeat: repeat; /* 图片重复铺满背景 */
+            background-size: 241px 238px; /* 设置图片大小 */
+            background-attachment: fixed; /* 使背景图片固定在窗口，不随内容滚动 */
+            background-position: top left; /* 可选，设置背景图片的对齐方式 */
+            background-color: #f4f4f9; /* 为避免图片加载时的闪烁效果，设置一个背景色 */
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .file-input, .chunk-size-input, .chunk-button, #outputArea {
+            width: calc(100% - 20px);
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+            height: 50px; /* 确保所有输入框和按钮的高度一致 */
+        }
+        .file-input:focus, .chunk-size-input:focus, .chunk-button:focus {
+            border-color: #007bff;
+        }
+        .chunk-button {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            border: none;
+        }
+        .chunk-button:hover {
+            background-color: #0056b3;
+        }
+        #outputArea {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            height: 340px;
+            overflow-y: auto;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #fafafa;
+            justify-content: center;
+        }
+        .chunk {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #fff;
+            width: calc(33.333% - 20px);
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .chunk:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        .chunk-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            width: 100%;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+            font-size: 14px;
+        }
+        .chunk-header strong {
+            font-size: 14px;
+            color: #555;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        .chunk-header strong.long-number {
+            font-size: 12px; /* 调整长数字的字号 */
+            white-space: normal; /* 允许换行 */
+            line-height: 1.2; /* 调整行高以保持美观 */
+        }
+        .copyButton {
+            padding: 3px 5px;
+            border: none;
+            border-radius: 3px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s ease;
+            white-space: nowrap;
+            width: auto;
+            height: auto; /* 高度自适应文字高度 */
+        }
+        .copyButton:hover {
+            background-color: #0056b3;
+        }
+        .chunk-content {
+            flex-grow: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #777;
+            font-size: 14px; /* 调整邮箱地址的字体大小 */
+            margin-top: 10px;
+        }
+        .chunk:hover .chunk-content {
+            white-space: normal;
+        }
+        .chunk.invisible {
+            visibility: hidden;
+        }
+        .alert {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>邮件地址分块器</h1>
+        <input type="file" id="fileInput" class="file-input" accept=".txt">
+        <input type="number" id="chunkSize" class="chunk-size-input" placeholder="输入块大小">
+        <button id="chunkButton" class="chunk-button">分块</button>
+        <div id="outputArea"></div>
+    </div>
+    <div id="alert" class="alert">块已复制到剪贴板</div>
+    <script>
+        document.getElementById('chunkButton').addEventListener('click', () => {
+            const fileInput = document.getElementById('fileInput');
+            const chunkSize = parseInt(document.getElementById('chunkSize').value, 10);
+            const outputArea = document.getElementById('outputArea');
+            outputArea.innerHTML = '';
+
+            if (fileInput.files.length === 0 || isNaN(chunkSize) || chunkSize <= 0) {
+                showAlert('请上传文件并输入有效的块大小');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const emails = event.target.result.split(/\r?\n/).filter(line => line.trim() !== '');
+                const chunks = [];
+                for (let i = 0; i < emails.length; i += chunkSize) {
+                    const chunk = emails.slice(i, i + chunkSize);
+                    chunks.push(chunk);
+                }
+                displayChunks(chunks);
+            };
+            reader.readAsText(file);
+
+            function displayChunks(chunks) {
+                chunks.forEach((chunk, index) => {
+                    const chunkDiv = document.createElement('div');
+                    chunkDiv.classList.add('chunk');
+                    const labelClass = chunk.length > 1 ? 'long-number' : '';
+                    chunkDiv.innerHTML = `
+                        <div class="chunk-header">
+                            <strong class="${labelClass}">模块 ${index + 1}</strong>
+                            <button class="copyButton">复制块</button>
+                        </div>
+                        <div class="chunk-content">${chunk.slice(0, 3).join('<br>')}<br>${chunk.length > 3 ? '...' : ''}</div>
+                    `;
+                    chunkDiv.querySelector('.copyButton').addEventListener('click', () => {
+                        navigator.clipboard.writeText(chunk.join('\n')).then(() => {
+                            showAlert('块已复制到剪贴板');
+                        });
+                    });
+                    outputArea.appendChild(chunkDiv);
+                });
+                // Add invisible chunks to align the last row
+                const remainder = chunks.length % 3;
+                if (remainder !== 0) {
+                    for (let i = 0; i < 3 - remainder; i++) {
+                        const invisibleChunk = document.createElement('div');
+                        invisibleChunk.classList.add('chunk', 'invisible');
+                        outputArea.appendChild(invisibleChunk);
+                    }
+                }
+            }
+        });
+
+        function showAlert(message) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.style.opacity = 1;
+            setTimeout(() => {
+                alert.style.opacity = 0;
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

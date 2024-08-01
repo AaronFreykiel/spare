@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="./img/favicon.ico" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小工具导航页面</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background-color: #323271; /* 标题栏背景 */
+            color: white;
+            text-align: center;
+            
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            background-color: #3b3b8a; /* 导航栏背景 */
+            padding: 10px;
+            position: relative;
+        }
+
+        .nav-bar a {
+            color: white;
+            padding: 14px 20px;
+            text-decoration: none;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .nav-bar a:hover {
+            background-color: #4a4ab2; /* 悬停时变浅 */
+        }
+
+        .menu-btn {
+            display: none;
+            font-size: 24px;
+            color: white;
+            background: #3b3b8a;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+        }
+
+        .nav-bar .nav-links a {
+            display: block;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: url('./img/dh_bkg.jpg') no-repeat center center;
+            background-size: cover;
+            overflow-y: auto;
+            position: relative;
+            color: white;
+            padding: 20px;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        .main-content::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* 半透明黑色背景，确保文本可见 */
+            z-index: 0;
+        }
+
+        @media (max-width: 768px) {
+            .nav-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .menu-btn {
+                display: block;
+            }
+
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-bar .nav-links a {
+                padding: 10px;
+                width: 100%;
+                text-align: left;
+            }
+        }
+
+        .footer {
+            background-color: #323271; /* 页脚背景 */
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #ddd;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .footer-content p {
+            margin: 0;
+            font-size: 1.2em;
+            color: #fff;
+        }
+
+        .link-list {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 0;
+            margin: 10px 0 0;
+            list-style: none;
+            gap: 10px; /* 增加链接列之间的间距 */
+        }
+
+        .link-list .link-column {
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .link-list .link-column a {
+            display: block;
+            text-decoration: none;
+            color: #fff;
+            margin: 5px 0;
+            transition: color 0.3s;
+            background-color: #4a4ab2; /* 方框背景色 */
+            padding: 10px;
+            border-radius: 5px; /* 圆角方框 */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* 阴影效果 */
+            font-size: 14px; /* 调整字体大小 */
+        }
+
+        .link-list .link-column a:hover {
+            color: #cddc39; /* 悬停时链接变浅 */
+            background-color: #5a5a9a; /* 悬停时方框颜色 */
+        }
+
+        @media (max-width: 768px) {
+            .link-list {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .link-list .link-column {
+                flex: none;
+                width: 100%;
+                margin: 5px 0;
+            }
+
+            .link-list .link-column a {
+                width: 100%;
+                box-sizing: border-box; /* 使 padding 在内边距中生效 */
+                text-align: center; /* 居中文本 */
+                margin: 10px 0; /* 调整间距 */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>工具导航</h1>
+    </div>
+
+    <div class="nav-bar">
+        <button class="menu-btn" id="menu-btn">☰</button>
+        <div class="nav-links" id="nav-links">
+            <a href="#home">首页</a>
+            <a href="#about">关于我们</a>
+            <a href="#services">服务</a>
+            <a href="#contact">联系</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="content">
+            <h2>欢迎来到我们的小工具导航页</h2>
+            <p>便捷的小工具已经移至底部链接</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="footer-content">
+            <div class="link-list">
+                <div class="link-column">
+                    <a href="../pages/wbyxtqq.html" target="_blank">文本邮箱提取器</a>
+                    <a href="../pages/yxwjfkq.html" target="_blank">邮箱文件分块器</a>
+                    <a href="#" target="_blank">网站3</a>
+                </div>
+                <div class="link-column">
+                    <a href="#" target="_blank">网站4</a>
+                    <a href="#" target="_blank">网站5</a>
+                    <a href="#" target="_blank">网站6</a>
+                </div>
+                <div class="link-column">
+                    <a href="#" target="_blank">网站7</a>
+                    <a href="#" target="_blank">网站8</a>
+                    <a href="#" target="_blank">网站9</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('menu-btn').addEventListener('click', function() {
+            document.getElementById('nav-links').classList.toggle('active');
+        });
+    </script>
+
+</body>
+</html>
